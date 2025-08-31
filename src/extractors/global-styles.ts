@@ -64,7 +64,7 @@ function rgbToHex(r: number, g: number, b: number): string {
  * Extract grid systems from actual style nodes
  */
 function extractGridSystemsFromNodes(
-  styleNodes: Record<string, any>, 
+  styleNodes: Record<string, any>,
   stylesMetadata: Record<string, any>
 ): Record<string, GridInfo[]> {
   const gridSystems: Record<string, GridInfo[]> = {};
@@ -76,7 +76,7 @@ function extractGridSystemsFromNodes(
         const columnGrids = nodeData.document.layoutGrids.filter(
           (grid: any) => grid.pattern === 'COLUMNS'
         );
-        
+
         if (columnGrids.length > 0) {
           const gridInfo: GridInfo[] = columnGrids.map((grid: any) => ({
             sectionSize: grid.sectionSize,
@@ -100,7 +100,7 @@ function extractGridSystemsFromNodes(
  * Extract font styles from actual style nodes
  */
 function extractFontStylesFromNodes(
-  styleNodes: Record<string, any>, 
+  styleNodes: Record<string, any>,
   stylesMetadata: Record<string, any>
 ): FontStyle[] {
   const fontStyles: FontStyle[] = [];
@@ -110,7 +110,7 @@ function extractFontStylesFromNodes(
       const nodeData = styleNodes[styleId];
       if (nodeData?.document?.style) {
         const styleData = nodeData.document.style;
-        
+
         const style: FontStyle = {
           name: metadata.name || styleId,
           fontFamily: styleData.fontFamily || 'Unknown',
@@ -162,7 +162,7 @@ function extractFontStylesFromNodes(
  * Extract colors from actual style nodes
  */
 function extractColorsFromNodes(
-  styleNodes: Record<string, any>, 
+  styleNodes: Record<string, any>,
   stylesMetadata: Record<string, any>
 ): ColorStyle[] {
   const colors: ColorStyle[] = [];
@@ -172,10 +172,10 @@ function extractColorsFromNodes(
       const nodeData = styleNodes[styleId];
       if (nodeData?.document?.fills) {
         const fills = nodeData.document.fills;
-        
+
         if (Array.isArray(fills) && fills.length > 0) {
           const fill = fills[0];
-          
+
           if (fill.type === 'SOLID' && hasValue('color', fill)) {
             colors.push({
               name: metadata.name || styleId,
@@ -229,16 +229,16 @@ export async function extractGlobalStyles(
 
   // Get all style IDs
   const styleIds = Object.keys(stylesMetadata);
-  
+
   // Fetch actual style nodes in batches (Figma API has a limit on how many IDs can be requested at once)
   const batchSize = 50; // Conservative batch size
   const styleNodes: Record<string, any> = {};
-  
+
   for (let i = 0; i < styleIds.length; i += batchSize) {
     const batch = styleIds.slice(i, i + batchSize);
     try {
       const batchResponse = await figmaService.getRawNode(fileKey, batch.join(','));
-      
+
       if (batchResponse.nodes) {
         Object.assign(styleNodes, batchResponse.nodes);
       }
@@ -277,7 +277,7 @@ export async function extractGlobalStylesFromDesign(
   simplifiedDesign: SimplifiedDesign
 ): Promise<ExtendedSimplifiedDesign> {
   const globalStyles = await extractGlobalStyles(figmaService, fileKey, rawApiResponse.styles || {});
-  
+
   return {
     ...simplifiedDesign,
     extractedGlobalStyles: globalStyles

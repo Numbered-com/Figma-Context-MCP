@@ -15,7 +15,6 @@ import { simplifyRawFigmaObject } from "../extractors/design-extractor.js";
 import {writeLogs} from '~/utils/logger.js';
 import {
   globalStylesExtractor,
-  extractGlobalStylesFromDesign,
 } from "../extractors/global-styles.js";
 
 // Extended SimplifiedNode type for custom extractor testing

@@ -21,6 +21,7 @@ export {
   textExtractor,
   visualsExtractor,
   componentExtractor,
+  gridExtractor,
   allExtractors,
   layoutAndText,
   contentOnly,

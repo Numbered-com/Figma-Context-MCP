@@ -26,6 +26,7 @@ export interface TraversalContext {
   globalVars: GlobalVars;
   currentDepth: number;
   parent?: FigmaDocumentNode;
+  artboard?: FigmaDocumentNode; // Current artboard with column grids
 }
 
 export interface TraversalOptions {
@@ -72,6 +73,8 @@ export interface SimplifiedNode {
   borderRadius?: string;
   // layout & alignment
   layout?: string;
+  // grid layout
+  spans?: string;
   // for rect-specific strokes, etc.
   componentId?: string;
   componentProperties?: ComponentProperties[];
