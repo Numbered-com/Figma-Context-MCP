@@ -15,6 +15,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `bun lint` - Run ESLint on the codebase
 - `bun format` - Format code using Prettier
 
+**Test Organization**:
+- Tests are located in `src/tests/` directory
+- Test files follow the naming convention `*.test.ts`
+- Existing test files: `benchmark.test.ts`, `integration.test.ts`, `extractor.test.ts`, `grid-extractor.test.ts`, `get-figma-data-tool.test.ts`
+- Tests use Jest framework with TypeScript support
+- Environment variables (`FIGMA_API_KEY`, `FIGMA_FILE_KEY`, `FIGMA_NODE_ID`) are required for integration tests
+
 ### Running the Server
 - `bun start` - Start the production server (Node.js)
 - `bun start:cli` - Start in CLI mode for MCP integration

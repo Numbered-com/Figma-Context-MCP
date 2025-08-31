@@ -1,5 +1,5 @@
 {
-  "name": "figma-developer-mcp",
+  "name": "@numbered/figma-developer-mcp",
   "version": "0.5.2",
   "description": "Model Context Protocol server for Figma integration",
   "type": "module",
@@ -12,7 +12,6 @@
     "README.md"
   ],
   "scripts": {
-		"postinstall": "bun run build",
     "build": "tsup --dts",
     "type-check": "tsc --noEmit",
     "test": "jest",
@@ -24,34 +23,30 @@
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.ts\"",
     "inspect": "pnpx @modelcontextprotocol/inspector",
-    "prepack": "bun build",
+    "prepack": "bun run build",
     "changeset": "changeset add",
     "version": "changeset version && git add -A",
     "beta:start": "changeset pre enter beta",
     "beta:end": "changeset pre exit",
     "beta:version": "changeset version && bun install --lockfile-only",
     "beta:publish": "changeset publish",
-    "prerelease": "bun build",
+    "prerelease": "bun run build",
     "release": "changeset publish && git push --follow-tags",
-    "pub:release": "bun build && npm publish",
-    "pub:release:beta": "bun build && npm publish --tag beta"
+    "pub:release": "bun run build && npm publish",
+    "pub:release:beta": "bun run build && npm publish --tag beta"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   },
-  "packageManager": "pnpm@10.10.0",
+  "packageManager": "bun@1.1.31",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/GLips/Figma-Context-MCP.git"
   },
-  "homepage": "https://www.framelink.ai",
-  "keywords": [
-    "figma",
-    "mcp",
-    "typescript"
-  ],
-  "author": "",
   "license": "MIT",
+	"publishConfig": {
+		"access": "public"
+	},
   "dependencies": {
     "@figma/rest-api-spec": "^0.33.0",
     "@modelcontextprotocol/sdk": "^1.10.2",
