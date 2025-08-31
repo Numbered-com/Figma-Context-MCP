@@ -120,21 +120,15 @@ export const componentExtractor: ExtractorFn = (node, result, _context) => {
 
 /**
  * Extracts grid span information from nodes when they're within an artboard with column grids.
- * This is the simple version that works with in-memory artboard context.
+ * Requires artboard context to be set before traversal (e.g., via initialContext in TraversalOptions).
  */
 export const gridExtractor: ExtractorFn = (node, result, context) => {
-  // Update context with current artboard if this node is a frame with column grids
-  if (node.type === 'FRAME' &&
-      'layoutGrids' in node &&
-      node.layoutGrids &&
-      Array.isArray(node.layoutGrids) &&
-      node.layoutGrids.some((grid: any) => grid.pattern === 'COLUMNS')) {
-    context.artboard = node;
-  }
-
-  const spans = extractGridSpans(node, { artboard: context.artboard as any });
-  if (spans) {
-    result.spans = findOrCreateVar(context.globalVars, spans, "spans");
+  // Only extract spans if we have a grid artboard in context
+  if (context.artboard) {
+    const spans = extractGridSpans(node, { artboard: context.artboard as any });
+    if (spans) {
+      result.spans = findOrCreateVar(context.globalVars, spans, "spans");
+    }
   }
 };
 

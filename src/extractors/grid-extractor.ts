@@ -59,37 +59,40 @@ function findParentArtboardWithGrid(
   // Convert target ID format: replace '-' with ':' to match raw file format
   const rawFileTargetId = targetNodeId.replace(/-/g, ':');
 
-  function searchWithParent(nodes: FigmaDocumentNode[], currentGridFrame: FigmaDocumentNode | null): { artboard: FigmaDocumentNode, gridNodeId: string } | null {
-		let gridFrame = currentGridFrame;
+  function searchWithParent(nodes: FigmaDocumentNode[], parentGridFrame: FigmaDocumentNode | null): { artboard: FigmaDocumentNode, gridNodeId: string } | null {
     for (const node of nodes) {
-      // Update current grid frame if this node is a frame with column grids
-			if (
-				node.type === 'FRAME' &&
-				node.layoutGrids &&
-				node.layoutGrids.some((grid) => grid.pattern === 'COLUMNS')
-			) {
-        gridFrame = node;
+      // Determine what grid frame this node's children should inherit
+      let gridFrameForChildren = parentGridFrame;
+
+      // If this node is a frame with column grids, it becomes the grid frame for its children
+      if (
+        node.type === 'FRAME' &&
+        node.layoutGrids &&
+        node.layoutGrids.some((grid) => grid.pattern === 'COLUMNS')
+      ) {
+        gridFrameForChildren = node;
       }
 
+      // Check if this node is our target
       if (node.id === rawFileTargetId) {
-        // Found target node, use the most recent grid frame
-        if (gridFrame) {
-          // Check if this frame has an associated grid in styles
+        // Found target node, use the parent grid frame (not the node itself)
+        if (parentGridFrame) {
+          // Check if parent frame has an associated grid in styles
           if (fileStyles?.grid) {
-            const gridNodeId = fileStyles.grid[gridFrame.id];
+            const gridNodeId = fileStyles.grid[parentGridFrame.id];
             if (gridNodeId) {
-              return { artboard: gridFrame, gridNodeId };
+              return { artboard: parentGridFrame, gridNodeId };
             }
           }
-
-          // If no associated grid in styles, use the frame directly as the artboard
-          return { artboard: gridFrame, gridNodeId: gridFrame.id };
+          // Use the parent frame directly as the artboard
+          return { artboard: parentGridFrame, gridNodeId: parentGridFrame.id };
         }
         return null;
       }
 
+      // Recursively search children with the correct grid frame
       if ('children' in node && node.children) {
-        const result = searchWithParent(node.children, gridFrame);
+        const result = searchWithParent(node.children, gridFrameForChildren);
         if (result) return result;
       }
     }
@@ -139,6 +142,7 @@ export async function createGridContext(
       }
     }
 
+
     return {
       gridArtboard: gridNode || null,
       targetFound: true
@@ -164,7 +168,7 @@ export function createGridExtractorWithContext(targetNodeId: string, gridArtboar
     }
 
     // Calculate grid spans using the pre-fetched grid artboard
-    if ('layoutGrids' in gridArtboard && gridArtboard.layoutGrids) {
+    if (gridArtboard?.layoutGrids) {
       const spans = extractGridSpans(node, { artboard: gridArtboard as any });
       if (spans) {
         result.spans = findOrCreateVar(context.globalVars, spans, "spans");
