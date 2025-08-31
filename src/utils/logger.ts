@@ -15,7 +15,7 @@ export const Logger = {
 };
 
 export function writeLogs(name: string, value: any): void {
-  if (process.env.NODE_ENV !== "development") return;
+  if (process.env.NODE_ENV === "production") return;
 
   try {
     const logsDir = "logs";
