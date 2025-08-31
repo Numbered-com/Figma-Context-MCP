@@ -12,6 +12,7 @@
     "README.md"
   ],
   "scripts": {
+		"postinstall": "bun run build",
     "build": "tsup --dts",
     "type-check": "tsc --noEmit",
     "test": "jest",
@@ -23,17 +24,17 @@
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.ts\"",
     "inspect": "pnpx @modelcontextprotocol/inspector",
-    "prepack": "pnpm build",
+    "prepack": "bun build",
     "changeset": "changeset add",
     "version": "changeset version && git add -A",
     "beta:start": "changeset pre enter beta",
     "beta:end": "changeset pre exit",
-    "beta:version": "changeset version && pnpm install --lockfile-only",
+    "beta:version": "changeset version && bun install --lockfile-only",
     "beta:publish": "changeset publish",
-    "prerelease": "pnpm build",
+    "prerelease": "bun build",
     "release": "changeset publish && git push --follow-tags",
-    "pub:release": "pnpm build && npm publish",
-    "pub:release:beta": "pnpm build && npm publish --tag beta"
+    "pub:release": "bun build && npm publish",
+    "pub:release:beta": "bun build && npm publish --tag beta"
   },
   "engines": {
     "node": ">=18.0.0"
