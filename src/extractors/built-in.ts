@@ -125,7 +125,7 @@ export const componentExtractor: ExtractorFn = (node, result, _context) => {
 export const gridExtractor: ExtractorFn = (node, result, context) => {
   // Only extract spans if we have a grid artboard in context
   if (context.artboard) {
-    const spans = extractGridSpans(node, { artboard: context.artboard as any });
+		const spans = extractGridSpans(node, { artboard: context.artboard as any });
     if (spans) {
       result.spans = findOrCreateVar(context.globalVars, spans, "spans");
     }

@@ -109,11 +109,10 @@ export async function createGridContext(
   figmaService: FigmaService,
   fileKey: string,
   targetNodeId: string,
-  rawFileData?: any
 ): Promise<{ gridArtboard: FigmaDocumentNode | null, targetFound: boolean }> {
   try {
     // Use provided raw file data or fetch if not provided
-    const fileData = rawFileData || await figmaService.getRawFile(fileKey);
+    const fileData = await figmaService.getRawFile(fileKey);
 
     // Find parent artboard with grid
     const gridInfo = findParentArtboardWithGrid(
@@ -168,7 +167,7 @@ export function createGridExtractorWithContext(targetNodeId: string, gridArtboar
     }
 
     // Calculate grid spans using the pre-fetched grid artboard
-    if (gridArtboard?.layoutGrids) {
+    if (gridArtboard && 'layoutGrids' in gridArtboard && gridArtboard.layoutGrids) {
       const spans = extractGridSpans(node, { artboard: gridArtboard as any });
       if (spans) {
         result.spans = findOrCreateVar(context.globalVars, spans, "spans");

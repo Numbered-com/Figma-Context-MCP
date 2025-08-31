@@ -22,9 +22,9 @@ export async function simplifyRawFigmaObjectWithGrids(
   // Build grid context if we have a target node and grid extractor is included
   if (targetNodeId && nodeExtractors.some(extractor => extractor.name === 'gridExtractor')) {
     try {
-      const gridContext = await createGridContext(figmaService, fileKey, targetNodeId, apiResponse);
+      const gridContext = await createGridContext(figmaService, fileKey, targetNodeId);
       gridArtboard = gridContext.gridArtboard;
-      console.log('Pre-built grid context:', gridArtboard);
+      console.log('Pre-built grid context:', gridArtboard?.name);
     } catch (error) {
       console.warn('Failed to pre-build grid context:', error);
     }

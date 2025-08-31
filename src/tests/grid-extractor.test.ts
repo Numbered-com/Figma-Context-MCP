@@ -2,6 +2,7 @@ import { config } from "dotenv";
 import { FigmaService } from "../services/figma.js";
 import { allExtractors, gridExtractor } from "../extractors/index.js";
 import { simplifyRawFigmaObjectWithGrids } from "../extractors/grid-aware-simplifier.js";
+import {writeLogs} from '~/utils/logger.js';
 
 // Load environment variables
 config();
@@ -10,7 +11,7 @@ describe('Grid Extractor', () => {
   let figmaService: FigmaService;
   let figmaFileKey: string;
   let figmaNodeId: string;
-  let rawFileData: any; // Cache the raw file data
+  let rawFileData: any;
 
   beforeAll(async () => {
     const figmaApiKey = process.env.FIGMA_API_KEY;
@@ -36,8 +37,9 @@ describe('Grid Extractor', () => {
 
     // Fetch raw file data once and cache it
     console.log(`Fetching raw file data for ${figmaFileKey}...`);
-    rawFileData = await figmaService.getRawFile(figmaFileKey);
-    console.log(`Raw file data cached with ${rawFileData.document.children.length} top-level nodes`);
+    // rawFileData = await figmaService.getRawFile(figmaFileKey);
+    rawFileData = await figmaService.getRawNode(figmaFileKey, figmaNodeId);
+    console.log(`Raw file data cached`);
   });
 
   test('should extract grid spans using built-in grid context', async () => {
@@ -45,11 +47,14 @@ describe('Grid Extractor', () => {
       // Test the same approach used by the MCP tool
       const result = await simplifyRawFigmaObjectWithGrids(
         rawFileData,
-        [gridExtractor],
+        // [gridExtractor],
+        allExtractors,
         figmaService,
         figmaFileKey,
         figmaNodeId
       );
+
+			writeLogs("figma-simplified.json", result);
 
       expect(result).toBeDefined();
       expect(result.nodes).toBeDefined();
@@ -64,7 +69,7 @@ describe('Grid Extractor', () => {
       console.error('Grid extractor test failed:', error);
       process.exit(1);
     }
-  });
+  }, 30000);
 
   // test('should work alongside other extractors with built-in grid context', async () => {
   //   try {
