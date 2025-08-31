@@ -15,7 +15,6 @@ import { simplifyRawFigmaObject } from "../extractors/design-extractor.js";
 import {writeLogs} from '~/utils/logger.js';
 import {
   globalStylesExtractor,
-  extractGlobalStylesFromDesign,
 } from "../extractors/global-styles.js";
 
 // Extended SimplifiedNode type for custom extractor testing
@@ -321,11 +320,9 @@ export { testExtractors };
 // Load environment variables
 config();
 
-// Run tests if this file is executed directly (Node.js style check)
-if (globalThis.process?.argv?.[1]?.endsWith('extractor.test.ts')) {
-  testExtractors()
-    .catch((error) => {
-      console.error('Test failed:', error);
-      globalThis.process?.exit(1);
-    });
-}
+// Jest test wrapper
+describe('Figma Extractors', () => {
+  test('should run all extractor tests successfully', async () => {
+    await testExtractors();
+  }, 30000); // 30 second timeout for API calls
+});

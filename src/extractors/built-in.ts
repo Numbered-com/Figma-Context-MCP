@@ -1,7 +1,6 @@
-import type { Node as FigmaDocumentNode } from "@figma/rest-api-spec";
 import type { ExtractorFn } from "./types.js";
 import { buildSimplifiedLayout } from "~/transformers/layout.js";
-import { buildSimplifiedStrokes, parsePaint } from "~/transformers/style.js";
+import { buildSimplifiedStrokes, parsePaint, extractGridSpans } from "~/transformers/style.js";
 import { buildSimplifiedEffects } from "~/transformers/effects.js";
 import {
   extractNodeText,
@@ -64,7 +63,7 @@ export const textExtractor: ExtractorFn = (node, result, context) => {
 export const visualsExtractor: ExtractorFn = (node, result, context) => {
   // Check if node has children to determine CSS properties
   const hasChildren = hasValue("children", node) && Array.isArray(node.children) && node.children.length > 0;
-  
+
   // fills
   if (hasValue("fills", node) && Array.isArray(node.fills) && node.fills.length) {
     const fills = node.fills.map((fill) => parsePaint(fill, hasChildren)).reverse();
@@ -100,7 +99,7 @@ export const visualsExtractor: ExtractorFn = (node, result, context) => {
 /**
  * Extracts component-related properties from INSTANCE nodes.
  */
-export const componentExtractor: ExtractorFn = (node, result, context) => {
+export const componentExtractor: ExtractorFn = (node, result, _context) => {
   if (node.type === "INSTANCE") {
     if (hasValue("componentId", node)) {
       result.componentId = node.componentId;
@@ -119,17 +118,31 @@ export const componentExtractor: ExtractorFn = (node, result, context) => {
   }
 };
 
+/**
+ * Extracts grid span information from nodes when they're within an artboard with column grids.
+ * Requires artboard context to be set before traversal (e.g., via initialContext in TraversalOptions).
+ */
+export const gridExtractor: ExtractorFn = (node, result, context) => {
+  // Only extract spans if we have a grid artboard in context
+  if (context.artboard) {
+		const spans = extractGridSpans(node, { artboard: context.artboard as any });
+    if (spans) {
+      result.spans = findOrCreateVar(context.globalVars, spans, "spans");
+    }
+  }
+};
+
 // -------------------- CONVENIENCE COMBINATIONS --------------------
 
 /**
  * All extractors - replicates the current parseNode behavior.
  */
-export const allExtractors = [layoutExtractor, textExtractor, visualsExtractor, componentExtractor];
+export const allExtractors = [layoutExtractor, textExtractor, visualsExtractor, componentExtractor, gridExtractor];
 
 /**
  * Layout and text only - useful for content analysis and layout planning.
  */
-export const layoutAndText = [layoutExtractor, textExtractor];
+export const layoutAndText = [layoutExtractor, textExtractor, gridExtractor];
 
 /**
  * Text content only - useful for content audits and copy extraction.
@@ -144,4 +157,4 @@ export const visualsOnly = [visualsExtractor];
 /**
  * Layout only - useful for structure analysis.
  */
-export const layoutOnly = [layoutExtractor];
+export const layoutOnly = [layoutExtractor, gridExtractor];

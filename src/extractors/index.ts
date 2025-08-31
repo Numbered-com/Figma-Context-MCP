@@ -19,6 +19,7 @@ export {
   textExtractor,
   visualsExtractor,
   componentExtractor,
+  gridExtractor,
   // Convenience combinations
   allExtractors,
   layoutAndText,
@@ -26,3 +27,10 @@ export {
   visualsOnly,
   layoutOnly,
 } from "./built-in.js";
+
+// Advanced grid extractors
+export {
+  createGridContext,
+  createGridExtractorWithContext,
+  simpleGridExtractor,
+} from "./grid-extractor.js";

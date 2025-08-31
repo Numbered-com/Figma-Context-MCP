@@ -4,6 +4,7 @@ import type {
   Vector,
   RGBA,
   Transform,
+  FrameNode,
 } from "@figma/rest-api-spec";
 import { generateCSSShorthand, isVisible } from "~/utils/common.js";
 import { hasValue, isStrokeWeights } from "~/utils/identity.js";
@@ -13,6 +14,11 @@ export type CSSHexColor = `#${string}`;
 export interface ColorValue {
   hex: CSSHexColor;
   opacity: number;
+}
+
+export interface GridSpans {
+  left?: string;
+  width?: string;
 }
 
 /**
@@ -781,4 +787,110 @@ function convertGradientToCss(
     default:
       return `linear-gradient(0deg, ${stops})`;
   }
+}
+
+/**
+ * Calculate grid column spans for a node within its artboard
+ * @param node - The node to calculate spans for
+ * @param artboard - The artboard containing the column grid
+ * @returns Grid span information or null if no grid found
+ */
+function calculateColumns(node: any, artboard: FrameNode): GridSpans | undefined {
+  if (!artboard.layoutGrids) return undefined;
+
+  const columnGrid = artboard.layoutGrids.find((grid: any) => grid.pattern === "COLUMNS");
+  if (!columnGrid) return undefined;
+
+  const nodeWidth = node.absoluteBoundingBox ? node.absoluteBoundingBox.width : 0;
+  const hasGutters = columnGrid.gutterSize !== 0;
+
+  const artboardWidth = "absoluteBoundingBox" in artboard && artboard.absoluteBoundingBox
+      ? artboard.absoluteBoundingBox.width
+      : 0;
+  const columnWidth: number = columnGrid.sectionSize ?? (artboardWidth - 2 * columnGrid.offset - (columnGrid.count - 1) * columnGrid.gutterSize) / columnGrid.count;
+  const gutterSize: number = columnGrid.gutterSize;
+
+  function calculateSpan(size: number): string | undefined {
+    const baseSpan = size / (columnWidth + gutterSize);
+    const baseSpanRounded = Math.abs(Math.round(baseSpan));
+    const remainder = size - baseSpanRounded * (columnWidth + gutterSize);
+    const distancesFromBaseSpan: Record<string, number> = {
+      current: -gutterSize,
+      next: columnWidth,
+    };
+    if (hasGutters) {
+      distancesFromBaseSpan["current-wide"] = 0;
+      distancesFromBaseSpan["current-wider"] = gutterSize;
+      distancesFromBaseSpan["next-wide"] = columnWidth + gutterSize;
+      distancesFromBaseSpan["next-wider"] = columnWidth + gutterSize * 2;
+    }
+    const [closestKey, closestValue] = Object.entries(distancesFromBaseSpan).reduce(
+      (closest, [key, value]) =>
+        Math.abs(value - remainder) < Math.abs(closest[1] - remainder) ? [key, value] : closest,
+    );
+
+    const delta = remainder - closestValue;
+
+    // if the delta is greater than 10, we don't consider it a valid span
+    if (Math.abs(delta) > 10) {
+      return undefined;
+    }
+
+    const columnSpan = closestKey.includes("next")
+      ? `${baseSpanRounded + 1}`
+      : `${baseSpanRounded}`;
+    const span = closestKey.includes("-")
+      ? `${columnSpan} ${closestKey.split("-")[1]}`
+      : `${columnSpan}`;
+
+    if (
+      baseSpanRounded === 0 &&
+      (closestKey === "current-wide" || closestKey === "current-wider")
+    ) {
+      return "0";
+    }
+
+    return span;
+  }
+
+  // Only calculate width span if layoutSizingHorizontal is FIXED
+  let width: string | undefined;
+  if (node.layoutSizingHorizontal === 'FIXED') {
+    width = calculateSpan(nodeWidth);
+  }
+
+  // Calculate left position based on difference between artboard and node absolute positioning
+  // let left: string | undefined;
+  // if (node.absoluteBoundingBox && artboard.absoluteBoundingBox) {
+  //   const leftDistance = node.absoluteBoundingBox.x - artboard.absoluteBoundingBox.x;
+  //   left = calculateSpan(leftDistance);
+  // }
+	if(width) {
+		return {
+			// left,
+			width,
+		}
+	}
+	return undefined
+}
+
+/**
+ * Extract grid span information for a node using traversal context
+ * @param node - The node to extract grid spans for
+ * @param context - Context containing current artboard information
+ * @returns Grid span information or null if no suitable artboard found
+ */
+export function extractGridSpans(
+  node: FigmaDocumentNode,
+  context?: { artboard?: FrameNode },
+): GridSpans | undefined {
+  // Use the artboard from context if provided
+  const artboard = context?.artboard;
+
+  // Calculate columns if an artboard with a column grid is found
+  if (artboard && "absoluteBoundingBox" in node) {
+    return calculateColumns(node, artboard);
+  }
+
+  return undefined;
 }

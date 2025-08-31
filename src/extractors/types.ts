@@ -26,11 +26,16 @@ export interface TraversalContext {
   globalVars: GlobalVars;
   currentDepth: number;
   parent?: FigmaDocumentNode;
+  artboard?: FigmaDocumentNode; // Current artboard with column grids
+  figmaService?: any; // FigmaService for grid context fetching
+  fileKey?: string; // File key for grid context fetching
+  rawFileData?: any; // Raw file data for grid context fetching
 }
 
 export interface TraversalOptions {
   maxDepth?: number;
   nodeFilter?: (node: FigmaDocumentNode) => boolean;
+  initialContext?: Partial<TraversalContext>;
 }
 
 /**
@@ -72,6 +77,8 @@ export interface SimplifiedNode {
   borderRadius?: string;
   // layout & alignment
   layout?: string;
+  // grid layout
+  spans?: string;
   // for rect-specific strokes, etc.
   componentId?: string;
   componentProperties?: ComponentProperties[];

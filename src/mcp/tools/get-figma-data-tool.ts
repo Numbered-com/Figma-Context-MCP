@@ -4,6 +4,7 @@ import { FigmaService } from "~/services/figma.js";
 import { simplifyRawFigmaObject, allExtractors } from "~/extractors/index.js";
 import yaml from "js-yaml";
 import { Logger, writeLogs } from "~/utils/logger.js";
+import {simplifyRawFigmaObjectWithGrids} from '~/extractors/grid-aware-simplifier.js';
 
 const parameters = {
   fileKey: z
@@ -52,7 +53,7 @@ async function getFigmaData(
     }
 
     // Use unified design extraction (handles nodes + components consistently)
-    const simplifiedDesign = simplifyRawFigmaObject(rawApiResponse, allExtractors, {
+    const simplifiedDesign = simplifyRawFigmaObjectWithGrids(rawApiResponse, allExtractors, figmaService, fileKey, nodeId, {
       maxDepth: depth,
     });
 
